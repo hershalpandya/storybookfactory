@@ -50,4 +50,4 @@ Use the [contributor guide](CONTRIBUTING.md) for the code map, test commands and
 
 The toolkit uses the [MIT License](LICENSE). See the [third-party notices](THIRD-PARTY-NOTICES.md) for the bundled Marelle 2 font and vendored skills.
 
-Maintained by Hershal Pandya. [LinkedIn](https://www.linkedin.com/in/hershalpandya/)
+Maintained by Hershal Pandya. [Hershal Pandya on LinkedIn](https://www.linkedin.com/in/hershalpandya/)
