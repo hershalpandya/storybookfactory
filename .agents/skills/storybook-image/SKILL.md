@@ -6,6 +6,13 @@ description: Use before and during any image provider call for a storybook — r
 
 Use the provider named in the owner's plan. For editions, use `storybook edition gemini` for Gemini or the `edition art-*` journal commands for an externally operated provider. Start with a dry run and follow `docs/EDITIONS.md`. Keep the private story, references, prompts and results in the owner's chosen local project; send images to a provider only under the owner's existing authorization.
 
+For a fresh edition scene, follow this order.
+
+1. Declare every story illustration's setting in the import index or a stage revision. Use the same setting ID across a recurring setting and give a reason for a standalone scene.
+2. Render and stage each recurring shot with `edition set-layout EDITION set-plans/SETTING.json PAGE NEW_OUTPUT --stage`. Inspect the camera, fixture count and order, and the intended visible actors. Write separate checks for exact actions and partial occlusion.
+3. Read `edition next` and inspect the dry-run attachments. The staged layout controls composition. Comparison images guide identity and style. Record the director review after staging, then dispatch under the approved budget.
+4. Review the capture with `storybook image-checklist`, using a crop where a detail is unclear. Assign a current passing attempt and record the separate visual review.
+
 Build profiles and scenes using `docs/SCENE-ASSETS.md`. Create distinct root PNGs after describing each character and prop and declaring their conditions and views. Look at the profiles side by side. Check identity, state, anatomy, construction and stable set details before storing any approved reference.
 
 Before a scene call, review the approved passage, set layout, camera, staging, cast and props against local profiles and adjacent scenes. Inspect each subject's planned part counts and visibility. Count two legs for a hen, four for a sheep, and the declared parts for insects, machines and props. Side views may overlap paired parts, and props or framing may hide them. Verify how each part lines up and attaches from the planned viewpoint. Review the colouring pose and use a separate placement when it needs a different profile or visibility. Check that the right character performs the action and that objects connect and move as planned. For a rope mechanism, follow one continuous path from attachment through pulley to free end. In a legacy scene project, use `set-preflight` and record the evidence with `review-set`. In an edition, inspect `scene-handoff` and the compiled slot checks.
@@ -22,7 +29,7 @@ owner decision before dispatching with a different provider.
 
 When text names a physical contact, add a separate `visual_checks` entry and choose a camera that shows both sides of the contact. For a group, list the members in order with individual identity marks. Check the count separately from identity and shape.
 
-Inspect every attachment before a fresh call. Use clean references that show the intended subject, style and condition. If an approved neighbour page is available, prefer one from a different set or camera angle. For a fresh cast, make a cast sheet and a clean set reference, then compose the exact roster needed for each page. Use one set plan for several cameras, with `edition set-layout` to render the views and `edition set-score` to check consistency against the plan.
+Inspect every attachment before a fresh call. Use clean references that show the intended subject, style and condition. If an approved neighbour page is available, prefer one from a different set or camera angle. For a fresh cast, make a cast sheet and a clean set reference, then compose the exact roster needed for each page. Use `edition set-score` when measuring agreement with the planned view.
 
 Use a targeted edit for a local surface change. Describe the intended change and name adjacent identity marks or connected parts that must remain visible. Restage when the camera, action or connections need to change. Use the region drift check when editing an assigned page. Review line weight on colouring pages alongside their neighbours.
 

@@ -54,6 +54,8 @@ def write_import(root, font, source, reviewed, adapted, config, source_review, a
     def make_page(record):
         record = deepcopy(record)
         for kind, item in record["art"].items():
+            reference = item["brief"].get("layout_reference") or {}
+            require("rendered" not in reference, "Render and stage layout evidence after import with edition set-layout --stage")
             file = item.pop("file", None)
             registered = registry.get((item.pop("registered_page", record["id"]), kind))
             if file is None and registered is not None:
@@ -86,6 +88,9 @@ def write_import(root, font, source, reviewed, adapted, config, source_review, a
         "pages": [make_page(value) for value in spec["pages"]],
         "import": {"specification_sha256": fingerprint(spec), "missing_files": missing},
     }
+    # Preserve the fingerprint of an existing pre-layout import on a repeat import.
+    if not (root / MANIFEST).exists() or load_edition(root).get("require_scene_layouts"):
+        draft["require_scene_layouts"] = True
     candidate = fingerprint(draft)
     if (root / MANIFEST).exists():
         require((root / "revisions" / f"{candidate}.json").exists(),

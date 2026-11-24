@@ -4,6 +4,7 @@ import difflib
 import hashlib
 import json
 from pathlib import Path
+from shlex import quote
 import sys
 from tempfile import TemporaryDirectory
 
@@ -64,7 +65,10 @@ def init_source(root):
 def init(args):
     root = args.project
     if getattr(args, "workspace", False):
-        require(not (root.exists() or root.is_symlink()), "Choose a new story workspace directory")
+        example = root.parent / f"{root.name or 'story'}-new"
+        occupied = (f"Choose a new story workspace directory. {root} already exists. "
+                    f"For example: storybook init {quote(str(example))} --workspace")
+        require(not (root.exists() or root.is_symlink()), occupied)
         root.parent.mkdir(parents=True, exist_ok=True)
         with TemporaryDirectory(dir=root.parent, prefix=".storybook-init-") as temp:
             stage = Path(temp) / "workspace"
@@ -74,7 +78,7 @@ def init(args):
             (stage / "outputs" / "final").mkdir()
             init_source(stage / WORKSPACE_SOURCE)
             (stage / "README.md").write_text(WORKSPACE_GUIDE, encoding="utf-8")
-            require(not (root.exists() or root.is_symlink()), "Choose a new story workspace directory")
+            require(not (root.exists() or root.is_symlink()), occupied)
             stage.rename(root)
     else:
         init_source(root)
@@ -167,7 +171,8 @@ def review(args):
     data["reviewed_story"] = {"file": target.name, "sha256": hashlib.sha256(target.read_bytes()).hexdigest()}
     data["adapted_story"] = None
     save(root / "project.json", data)
-    print(f"Saved human-reviewed story to {target}; unresolved uncertainty remains visible.")
+    uncertain = sum(bool(passage["uncertainty"].strip()) for passage in passages)
+    print(f"Saved human-reviewed story to {target}. Passages with recorded uncertainty: {uncertain}.")
 
 
 def language_info(args):

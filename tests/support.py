@@ -245,6 +245,10 @@ def build_delivery_edition(work):
         "generation": {"model": "gemini-nano-banana-2.1", "max_submissions": 1,
                        "slots": ["outbound/illustration", "delivery/illustration"]},
     }
+    for page, reason in zip(spec["pages"], ("South bench is only shown on this page.",
+                                           "North delivery bay is only shown on this page.")):
+        page["art"]["illustration"]["brief"]["standalone_reason"] = reason
+
     meta = write(work / "delivery-metadata.json", {"title": "La livraison de Marine"})
     path = write(work / "delivery-index.json", spec)
     run("edition", "import", root, legacy, path, meta)

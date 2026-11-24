@@ -12,6 +12,7 @@ from ..sources import WORKSPACE_EDITION, WORKSPACE_SOURCE
 from ..store import emit, load, project_file, require, serialized, sha256, write_json
 from .manifest import checked_path, load_edition
 from .reviews import record_review
+from .scene_layouts import blocker as layout_blocker
 from .slots import (art_dependency, compile_edition, director_dependency, inventory, layout, show_handoff,
                     text_dependency)
 
@@ -21,6 +22,9 @@ def check(args):
     compiled = compile_edition(args.project, edition)
     result = inventory(args.project, edition, compiled)
     result["layout"] = layout(args.project, edition)[2]
+    result["generation_layout_blockers"] = {
+        slot: message for slot in compiled if (message := layout_blocker(args.project, edition, slot))
+    }
     emit(result)
 
 
@@ -96,6 +100,7 @@ def build(args):
         stage = Path(workspace) / "book"
         stage.mkdir()
         assets, cover_art = {}, {}
+        compact_reading = set()
         for packet in compiled.values():
             page_id, kind = packet["slot"].split("/")
             row = next(row for row in report["slots"] if row["slot"] == packet["slot"])
@@ -110,12 +115,15 @@ def build(args):
                     image.save(path)
             else:
                 path = checked_path(root, packet["image"])
+                if not args.final and not packet["role"] and kind == "illustration":
+                    compact_reading.add(page_id)
             if packet["role"]:
                 cover_art[packet["role"]] = path
             else:
                 assets[(page_id, kind)] = path
         render.render_book(stage, edition["metadata"], font_path, prepared, assets, cover_art,
-                           ("reading",) if args.reading_only else tuple(args.mode or render.MODES))
+                           ("reading",) if args.reading_only else tuple(args.mode or render.MODES),
+                           compact_reading=compact_reading)
         (stage / "missing-art.png").unlink(missing_ok=True)
         write_json(stage / "reviewed-text.json", reviewed_text(root, edition))
         write_json(stage / "proof-report.json", {**report, "layout": layout_report,

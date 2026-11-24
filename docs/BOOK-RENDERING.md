@@ -13,3 +13,7 @@ All PDFs use one A4 landscape page per sheet side. The regular print files have 
 Print on A4 landscape at **100% / Actual size**, one PDF page per sheet side; disable fit-to-page, booklet and multiple-pages-per-sheet settings. For duplex select **flip on the short edge**. Sew through the left edge of fronts; the right edge of backs aligns with it. Print and inspect one sheet first to check feed orientation, both sides, alignment and clipping before printing the book.
 
 Marelle 2 is the bundled font for French CE1. Pillow must have libraqm support to shape text; an explicit `--font PATH` can select a suitable TrueType font for another language. Font coverage, shaping, annotation positioning and readability need human inspection, especially with a new script. The renderer fails on missing or stale assets and text that exceeds its layout; revise the scene pagination when text does not fit. Inspect every page for artwork, annotation, overlap and margins, and review the physical print and sewn proof. Registrations and approval flags record assertions; they do not verify artwork or language quality.
+
+Edition reading previews compress opaque story illustrations as JPEG at their
+existing pixel dimensions. Final builds and print modes use the original
+artwork encoding path.

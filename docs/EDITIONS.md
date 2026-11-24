@@ -66,7 +66,7 @@ To choose the provider and store an API key, or to use a subscription tool such 
 
 Google Gemini is the image provider for editions. The only implemented API model is `gemini-nano-banana-2.1`, chosen for cost: it has the lowest standard per-image price at both 1K and 2K. Nano Banana 2 Lite matches it at 1K but has no 2K output, and Nano Banana Pro costs several times more. Using one model for every slot also keeps the style consistent. The edition's `generation` object supplies this `model`, the allowed `slots` and a lifetime `max_submissions` ceiling. Set it at import, or later with a revision operation such as `{"op": "generation", "model": "gemini-nano-banana-2.1", "slots": ["p18/illustration", "p20/colouring"], "max_submissions": 8}`. Slots are story pages and the front cover (`cover/illustration`); the private back cover is refused. The ceiling counts every submission in the edition's Gemini journal, so it must exceed the number already made. `storybook edition gemini PROJECT PAGE/illustration --dry-run` lists the ordered inputs, roles, output dimensions and budget. Use `gemini-probe` to check local environment or Keychain credential presence. An authenticated request is a separate step. Use `GEMINI_API_KEY` or the macOS login Keychain service `Storybook Toolkit Gemini API` (override the name with `STORYBOOK_KEYCHAIN_SERVICE`), account `storybook`; see [providers](PROVIDERS.md). Store the key privately.
 
-The paid call requires current director approval. Results are recorded under `generation-runs/edition-gemini/`. Check a captured attempt's actual art, then record `gemini-quality PROJECT ATTEMPT pass|localized|unusable --reviewer NAME --seconds SECONDS --evidence OBSERVATIONS`. Use `assign` with `attempt` to promote a current passing capture and record its edition visual review. A localized defect permits one edit with `--parent ATTEMPT --edit 'targeted change'`. Stop and record the owner's decision after provider or quality failures. Use `gemini-resume` with owner and reconciliation evidence for a paused journal only after the condition has been resolved. Ambiguous submissions require billing/provider reconciliation before further dispatch. The adapter has one provider and performs no automatic retry. Rerunning an identical packet after a failed attempt makes no call until the owner releases it: `gemini-resume PROJECT --owner NAME --evidence TEXT --resubmit ATTEMPT` works whether or not the journal is paused, and each release allows one resend.
+The paid call requires current director approval. Results are recorded under `generation-runs/edition-gemini/`. Check a captured attempt's actual art, then record `gemini-quality PROJECT ATTEMPT pass|localized|unusable --reviewer NAME --seconds SECONDS --evidence OBSERVATIONS`. Use `assign` with `attempt` to promote a current passing capture. The disposition defaults to `reuse`. Record the separate edition visual review. A localized defect permits one edit with `--parent ATTEMPT --edit 'targeted change'`. Stop and record the owner's decision after provider or quality failures. Use `gemini-resume` with owner and reconciliation evidence for a paused journal only after the condition has been resolved. Ambiguous submissions require billing/provider reconciliation before further dispatch. The adapter has one provider and performs no automatic retry. Rerunning an identical packet after a failed attempt makes no call until the owner releases it: `gemini-resume PROJECT --owner NAME --evidence TEXT --resubmit ATTEMPT` works whether or not the journal is paused, and each release allows one resend.
 
 Wire format: Google accepts only `image/jpeg` output, so the adapter requests JPEG and converts the decoded pixels to PNG for intake; the attempt's `provider_output` records the JPEG digest. PNG inputs travel as JPEG quality 92 (`wire_encoding` in the packet) to stay under the 20 MB inline limit; the journal still hashes the stored PNG. If a response breaks mid-stream, the adapter reads the interaction id from the partial body and fetches the stored interaction by id, which makes no new generation; otherwise the attempt stays ambiguous with that id recorded.
 
@@ -167,8 +167,17 @@ Punctuation between the number and noun breaks the match.
 
 ## Set plans and rendered layouts
 
-Keep one set plan per setting, for example `book-edition/set-plans/setting.json`.
-Coordinates are in metres with x east, z north and y up.
+For new editions, declare every story illustration before the first fresh scene
+submission. Put `"setting": "garden"` in each illustration brief for the same
+recurring setting, even when two pages use the same camera. For a one-off scene,
+use `"standalone_reason": "This setting appears only on this page."` Review
+every declaration together. Use a `stage` revision operation to update an
+imported brief. Existing editions can adopt the gate by classifying their scenes.
+Draft previews can build before this preflight is complete.
+
+Keep one plan at `set-plans/SETTING.json` inside the edition, where `SETTING`
+is the ID declared in the brief. Coordinates are in metres with x east, z north
+and y up.
 
 - `objects`: a map from story element IDs to geometry. Use `ground` with x and z
   ranges, `box` with x, z, width, depth and height, `sphere` with x, y, z and radius,
@@ -190,9 +199,30 @@ Coordinates are in metres with x east, z north and y up.
 ```sh
 P=projects/my-story
 storybook edition set-layout "$P/book-edition" set-plans/setting.json page-id \
-  "$P/book-edition/artwork-preparation/layout-page-id"
+  "$P/book-edition/artwork-preparation/layout-page-id" --stage
 ```
 
-The command renders `layout.png` locally (no provider call). With `--top` images it also writes `sheet.png`, which has those images in a top band and the layout below. `derived.json` holds what is visible where, a layout sentence and yes/no checks. Stage the sheet as the brief's `layout_reference` with the derived `role`, append the sentence to the description, and merge the checks into `visual_checks`.
+This renders the 2D perspective PNG locally and stages it in a revision.
+Repeat for each page with a fresh output directory. With `--top` images
+from inside the edition, it stages a composed `sheet.png` instead. The
+generated `derived.json` shows what is visible, the layout sentence and the
+checks. Without `--stage`, the command renders a local preview only.
+
+Inspect the layouts beside the story beats. Check camera direction, fixture
+count and order, and planned actor visibility. Add authored `visual_checks`
+for exact actions and details such as a partly hidden prop. Keep those checks
+observable from the framing. During review use `storybook image-checklist`
+and inspect the actual capture, including close crops for ambiguous details.
+Use the layout for composition and comparison images for identities and style.
+
+Run `edition check` or `edition next` and inspect the dry-run packet. A fresh
+scene submission for a recurring setting requires the staged layout in the
+packet. When using `art-start`, put the exact staged file and SHA in the shot's
+`inputs`, use its role and include the derived sentence in the prompt. Stage all planned
+layouts before opening an external art round, which is tied to its starting
+revision. When a
+shared plan changes, re-render and restage its pages before dispatching them.
+The existing layout step in [Pip and the Kite](../examples/pip-and-the-kite/README.md)
+is an offline example.
 
 To measure consistency, ask a reviewer who did not make the images to answer the derived checks for each image, labelled at random. Then run `storybook edition set-score PROJECT answers.json --key key.json` for the agreement rate per image and per arm.

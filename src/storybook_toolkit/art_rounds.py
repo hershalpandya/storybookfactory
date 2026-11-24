@@ -5,7 +5,8 @@ from time import time
 from uuid import uuid4
 
 from . import edition, journal as journals
-from .store import emit, fingerprint, identifier, load, prose, require, serialized, strings, write_json
+from .edition.scene_layouts import blocker as layout_blocker
+from .store import ProjectError, emit, fingerprint, identifier, load, prose, require, serialized, strings, write_json
 
 
 def path_for(root, run):
@@ -63,6 +64,13 @@ def reserve(args):
     slot = edition.show_handoff(root, page, kind)[0]
     dependency = edition.director_dependency(slot)
     shot = load(args.shot)
+    parent = shot.get("edit_parent")
+    blocked = None if parent else layout_blocker(root, manifest, args.slot, shot["inputs"])
+    if blocked:
+        if args.dry_run:
+            emit({"round": args.run, "slot": args.slot, "blockers": [blocked], "calls": 0})
+            return
+        raise ProjectError(blocked)
     require(prose(shot.get("prompt")), "Record the exact generation prompt")
     checks = {}
     merge_checks(checks, slot["brief"].get("visual_checks", {}))
@@ -74,7 +82,6 @@ def reserve(args):
         require(ref["sha256"] != excluded and ref["sha256"] not in used,
                 "Attachments must have distinct digests and exclude the private back cover")
         used.add(ref["sha256"])
-    parent = shot.get("edit_parent")
     previous_rounds = [
         load(journal) for journal in journals.journal_paths(root, "art-")
     ]

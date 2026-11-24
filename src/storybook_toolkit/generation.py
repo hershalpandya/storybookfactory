@@ -13,6 +13,7 @@ from uuid import uuid4
 
 from . import consistency, edition, journal as journals
 from .edition import KINDS
+from .edition.scene_layouts import blocker as layout_blocker
 from .journal import pause
 # The packet estimates its inline size with the adapter's wire encoding.
 from .providers.gemini_http import MAX_INLINE_BYTES, MODEL, WIRE_JPEG_QUALITY, Gemini, ProviderStop, wire_bytes
@@ -78,7 +79,7 @@ def policy(manifest, slot):
     return value
 
 
-def generation_packet(root, manifest, slot, record, parent=None, edit=None):
+def generation_packet(root, manifest, slot, record, parent=None, edit=None, *, handoff=None):
     page, kind = slot.split("/")
     require(kind in edition.KINDS or kind == "profile", "Unknown generation slot")
     if kind == "profile":
@@ -88,7 +89,7 @@ def generation_packet(root, manifest, slot, record, parent=None, edit=None):
                   "reading_box_pt": (0, 0, 250, 250), "comparisons": []}
         packet["visual_dependency"] = edition.art_dependency(packet)
     else:
-        packet = edition.show_handoff(root, page, kind)[0]
+        packet = handoff if handoff is not None else edition.show_handoff(root, page, kind)[0]
     require(packet["role"] != "back", "Back-cover imagery is private and excluded from generation")
     excluded = {item["image"]["sha256"] for item in manifest["covers"]["back"]["art"].values() if item.get("image")}
     ordered = {}
@@ -99,7 +100,8 @@ def generation_packet(root, manifest, slot, record, parent=None, edit=None):
         mime_type = {".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg",
                      ".webp": "image/webp"}.get(path.suffix)
         require(mime_type, "Gemini input must be PNG, JPEG or WebP")
-        item = ordered.setdefault(image["sha256"], {**image, "mime_type": mime_type, "roles": [], "groups": []})
+        item = ordered.setdefault(image["sha256"], {**{k: v for k, v in image.items() if k != "rendered"},
+                                                     "mime_type": mime_type, "roles": [], "groups": []})
         item["roles"].append(role)
         if group not in item["groups"]:
             item["groups"].append(group)
@@ -125,10 +127,16 @@ def generation_packet(root, manifest, slot, record, parent=None, edit=None):
     edit_only = bool(parent)
     for ref in [] if edit_only else packet["references"]:
         attach(ref["image"], f"{ref['subject']} {ref['state']} {ref['view']}: {ref['visible_features']}", ref["catalog"])
+    layout_ref = packet["brief"].get("layout_reference") or {}
+    rendered = layout_ref.get("rendered")
+    if rendered and not edit_only:
+        attach(layout_ref, layout_ref["role"], "props")
     for ref in [] if edit_only else packet["comparisons"]:
-        attach(ref, ref["role"], "props")
-    layout_ref = (packet.get("brief") or {}).get("layout_reference")
-    if layout_ref and not edit_only:
+        role = ref["role"]
+        if rendered:
+            role = f"Use only for identity and style; use the rendered layout for composition. {role}"
+        attach(ref, role, "props")
+    if layout_ref and not rendered and not edit_only:
         attach(layout_ref, layout_ref["role"], "props")
     if kind == "profile":
         for source in packet["brief"].get("sources", []):
@@ -143,6 +151,11 @@ def generation_packet(root, manifest, slot, record, parent=None, edit=None):
     guidance = {k: v for k, v in brief.items()
                 if k not in ("references", "comparison_references", "comparison_pages", "layout_reference",
                              "sources", "text_exemptions", "aspect_ratio", "image_size", "prompt")}
+    if rendered or manifest.get("require_scene_layouts"):
+        guidance.pop("setting", None)
+        guidance.pop("standalone_reason", None)
+    if rendered and not edit_only:
+        guidance["layout_from_camera"] = rendered["text"]
     snapshot = packet["world"]
     if snapshot:
         visible = set(snapshot["visibility"]) | {move["character"] for move in snapshot["movements"]}
@@ -175,7 +188,7 @@ def generation_packet(root, manifest, slot, record, parent=None, edit=None):
             "wire_encoding": f"PNG inputs sent as JPEG quality {WIRE_JPEG_QUALITY}"}
 
 
-def packet_warnings(manifest, packet):
+def packet_warnings(manifest, packet, comparisons=()):
     """Flag ambiguous or missing references in the dry run."""
     warnings = []
     subjects = defaultdict(set)
@@ -186,10 +199,10 @@ def packet_warnings(manifest, packet):
         if len(shared) >= 3:
             warnings.append(f"{item['file']} is one scene used as the reference for {len(shared)} subjects "
                             f"({', '.join(sorted(shared))}); unrelated characters and elements may carry over")
+    attached = {item["sha256"] for item in packet["ordered_inputs"]}
     if packet["kind"] == "illustration" and not packet["parent"] and not any(
-            role.startswith("Neighbour") or "comparison" in role.lower()
-            for item in packet["ordered_inputs"] for role in item["roles"]):
-        warnings.append("No approved neighbour page is attached; add comparison_references for style and set")
+            ref["sha256"] in attached for ref in comparisons):
+        warnings.append("No neighbour comparison is attached; add comparison_references for identity and style if available")
     return warnings
 
 
@@ -219,14 +232,26 @@ def dispatch(args, provider=None):
     manifest = edition.load_edition(root)
     settings = policy(manifest, args.slot)
     path, record = journal(root)
-    packet = generation_packet(root, manifest, args.slot, record, args.parent, args.edit)
+    blocked = None if args.parent else layout_blocker(root, manifest, args.slot)
+    if blocked:
+        if args.dry_run:
+            emit({"slot": args.slot, "blockers": [blocked], "calls": 0})
+            return None
+        raise ProjectError(blocked)
+    page, kind = args.slot.split("/")
+    handoff = edition.show_handoff(root, page, kind)[0] if kind != "profile" else None
+    packet = generation_packet(root, manifest, args.slot, record, args.parent, args.edit, handoff=handoff)
+    if not args.parent:
+        blocked = layout_blocker(root, manifest, args.slot, packet["ordered_inputs"])
+        require(blocked is None, blocked)
+    comparisons = handoff["comparisons"] if handoff else ()
     attempts_count = len(record["attempts"])
     budget = {"used_submissions": attempts_count, "max_submissions": settings["max_submissions"],
               "output_estimate_usd": OUTPUT_USD[packet["image_size"]],
               "pricing": "Output image estimate; input and thinking billed separately"}
     if args.dry_run:
         emit({**packet, "budget": budget, "paused": record.get("paused"),
-                      "warnings": packet_warnings(manifest, packet)})
+                      "warnings": packet_warnings(manifest, packet, comparisons)})
         return None
     record = reconcile(root, path, record)
     require(not record.get("paused"), f"Gemini dispatch is paused. Read {path}")
@@ -237,9 +262,7 @@ def dispatch(args, provider=None):
     if packet["parent"] and settings.get("drift_max") is not None:
         require(regions, "Declare the edit's target region(s) with --region so drift can be measured")
     active = edition.active_reviews(root)
-    page, kind = args.slot.split("/")
-    if kind != "profile":
-        handoff = edition.show_handoff(root, page, kind)[0]
+    if handoff:
         accepted = edition.review_for(active, args.slot, handoff["visual_dependency"])
         if accepted and accepted["decision"] == "approved" and not args.parent:
             emit({"result": "reused", "slot": args.slot, "calls": 0})

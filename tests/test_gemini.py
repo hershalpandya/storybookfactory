@@ -4,6 +4,7 @@ from base64 import b64encode
 from copy import deepcopy
 from http.client import IncompleteRead
 from io import BytesIO
+import json
 from types import SimpleNamespace
 from urllib.error import HTTPError
 
@@ -78,9 +79,9 @@ def test_gemini_dry_run_warns_about_scene_references_and_missing_neighbours():
               "ordered_inputs": [{"file": "content/s.png", "sha256": "s", "roles": ["a summer side"]}]}
     warnings = gemini.packet_warnings(manifest, packet)
     assert any("3 subjects" in w for w in warnings) and any("neighbour" in w for w in warnings)
-    packet["ordered_inputs"][0]["roles"] = ["Neighbour page p11: match its style"]
+    packet["ordered_inputs"][0]["roles"] = ["Match its style"]
     manifest["roots"] = {"characters/a/summer/side": scene}
-    assert gemini.packet_warnings(manifest, packet) == []
+    assert gemini.packet_warnings(manifest, packet, [{"sha256": "s"}]) == []
 
 
 def set_policy(root, tmp_path, **options):
@@ -136,6 +137,7 @@ def test_submission_ceiling_pauses_after_a_review_that_does_not_pass(delivery, t
     path_record["attempts"]["a3"] = {"case": "c3", "status": "captured", "slot": "outbound/illustration"}
     write_json(path, path_record)
     assert "ceiling reached before visual acceptance" in quality(root, "a3", "localized", ok=False).stderr
+    assert json.loads(run("edition", "next", root).stdout)["action"] == "budget-exhausted"
 
 
 def image_payload(*images):

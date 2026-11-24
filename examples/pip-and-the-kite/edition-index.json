@@ -7,13 +7,13 @@
   {"id": "p01", "text": "Pip, le mouton, trouve un cerf-volant rouge dans le pré. Le vent l'emporte très haut, et Pip court derrière.",
    "annotations": [], "events": ["find-kite"],
    "art": {
-    "illustration": {"disposition": "new", "reason": "New story", "brief": {"description": "Pip, a small white sheep, runs across a green meadow after a red kite rising in the wind."}},
+    "illustration": {"disposition": "new", "reason": "New story", "brief": {"setting": "meadow", "description": "Pip, a small white sheep, runs across a green meadow after a red kite rising in the wind."}},
     "colouring": {"disposition": "new", "reason": "New story", "brief": {"description": "A simple outline of the kite with its tail."}}
    }},
   {"id": "p02", "text": "Nell, son amie, tient la ficelle avec Pip. Ensemble, ils gardent le cerf-volant dans le ciel jusqu'au coucher du soleil.",
    "annotations": [], "events": ["fly-together"],
    "art": {
-    "illustration": {"disposition": "new", "reason": "New story", "brief": {"description": "At sunset Pip and Nell, a brown sheep, hold the kite string together on a hill."}},
+    "illustration": {"disposition": "new", "reason": "New story", "brief": {"setting": "meadow", "description": "At sunset Pip and Nell, a brown sheep, hold the kite string together on a hill."}},
     "colouring": {"disposition": "new", "reason": "New story", "brief": {"description": "A simple outline of Pip and Nell holding the string."}}
    }}
  ],

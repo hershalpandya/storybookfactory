@@ -1,11 +1,13 @@
 """CLI for plan v2: ab (drift gate), textspec, cast-sheet, sheets, scorecard, next, set-layout and set-score."""
 
+from copy import deepcopy
+import json
 from pathlib import Path
 
-import json
-
 from . import consistency, edition, setplan, textspec
-from .store import emit, load, require
+from .edition.revise import apply_revision
+from .edition.scene_layouts import declaration, plan_file
+from .store import emit, load, project_file, require, serialized, sha256
 
 
 def ab(args):
@@ -89,8 +91,31 @@ def split_sheet(args):
 
 
 def set_layout(args):
+    if args.stage:
+        return serialized(render_set_layout)(args)
+    return render_set_layout(args)
+
+
+def render_set_layout(args):
     """Render one page's shot of a set plan locally and derive its layout sentence and checks."""
     plan_path = args.plan if args.plan.is_absolute() else args.project / args.plan
+    before = edition.load_edition(args.project) if args.stage else None
+    if before:
+        page = edition.page_by_id(before, args.page)
+        require(not page.get("role"), "Stage layouts for story illustrations")
+        setting = declaration(page["art"]["illustration"]["brief"])
+        require(setting is not None, "Declare a recurring setting before staging its layout")
+        source = plan_file(setting)
+        require(plan_path.resolve() == project_file(args.project, source).resolve(),
+                f"Use the shared set plan at {source}")
+        plan_digest = sha256(plan_path.read_bytes())
+        private = before["covers"]["back"]["art"]["illustration"].get("image", {}).get("sha256")
+        require(not args.top or len(args.top) == len(args.top_role or []),
+                "Label each staged top image with --top-role")
+        for top in args.top or []:
+            require(top.resolve().is_relative_to(args.project.resolve()),
+                    "Staged top images must be inside the edition")
+            require(sha256(top.read_bytes()) != private, "The private back cover is excluded from layout sheets")
     plan = setplan.load_plan(plan_path)
     shot = plan.get("shots", {}).get(args.page)
     require(shot, f"The set plan has no shot for {args.page}")
@@ -107,7 +132,31 @@ def set_layout(args):
         result["sheet"] = str(sheet)
     result["role"] = setplan.layout_role(plan, actors, args.top_role or [])
     (args.output / "derived.json").write_text(json.dumps(result, ensure_ascii=False, indent=1) + "\n")
+    if before:
+        result["staged"] = stage_layout(args, before, source, plan_digest, result)
     emit(result)
+
+
+def stage_layout(args, before, plan, plan_digest, result):
+    root = args.project
+    edition.checked_path(root, {"file": plan, "sha256": plan_digest})
+    brief = deepcopy(edition.page_by_id(before, args.page)["art"]["illustration"]["brief"])
+    asset = Path(result.get("sheet", result["layout"]))
+    brief["layout_reference"] = {
+        "file": asset.name, "role": result["role"],
+        "rendered": {"plan": plan, "plan_sha256": plan_digest, "page": args.page,
+                     "text": result["text"], "checks": result["checks"]},
+    }
+    # Normalize older briefs that predate the named comparison references.
+    legacy = brief.pop("comparison_pages", [])
+    if legacy:
+        brief.setdefault("comparison_references", []).extend(
+            {"page": page, "kind": "illustration",
+             "role": f"Neighbour page {page}: use its illustration style and preserve the identity of recurring elements"}
+            for page in legacy if page != args.page)
+    spec = {"revision": before["revision"], "editor": "storybook set-layout", "reason": f"Render {args.page} from {plan}",
+            "operations": [{"op": "stage", "kind": "illustration", "page": args.page, "brief": brief}]}
+    return apply_revision(root, before, spec, asset.parent, render_layout=True)
 
 
 def set_score(args):
@@ -142,6 +191,7 @@ def register(add):
     parser.add_argument("plan", type=Path, help="Set plan JSON (relative to the project or absolute)")
     parser.add_argument("page", help="Page ID with a shot in the plan")
     parser.add_argument("output", type=Path, help="New directory for layout.png, sheet.png and derived.json")
+    parser.add_argument("--stage", action="store_true", help="Stage the rendered layout and checks in a new revision")
     parser.add_argument("--top", type=Path, action="append", help="Image for the sheet's top band (repeatable)")
     parser.add_argument("--top-role", action="append", help="Role sentence for each --top image, in order")
     parser = add("set-score", set_score)

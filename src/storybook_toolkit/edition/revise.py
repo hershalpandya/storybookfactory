@@ -47,8 +47,9 @@ def split_page(edition, index, op):
 class Revision:
     """What every operation sees: the project root, the draft edition, the envelope and its directory."""
 
-    def __init__(self, root, edition, spec, folder):
+    def __init__(self, root, edition, spec, folder, *, render_layout):
         self.root, self.edition, self.spec, self.folder = root, edition, spec, folder
+        self.render_layout = render_layout
 
     def file(self, name):
         """A file named by an operation: a relative path from the operation file that stays inside the edition
@@ -128,7 +129,8 @@ def op_assign(rev, op, page):
         item["image"] = picture(root, image)
     if op.get("file"):
         item["image"] = picture(root, rev.file(op["file"]))
-    item.update(disposition=op["disposition"], reason=op["reason"])
+    disposition = op.get("disposition", "reuse") if op.get("attempt") else op["disposition"]
+    item.update(disposition=disposition, reason=op["reason"])
 
 
 def op_unassign(rev, op, page):
@@ -145,10 +147,14 @@ def op_stage(rev, op, page):
             "Name neighbour art with comparison_references (page, kind, role), not comparison_pages")
     brief = deepcopy(op["brief"])
     layout_ref = brief.get("layout_reference")
+    slot = page["art"][op["kind"]]
+    if isinstance(layout_ref, dict) and "rendered" in layout_ref and not rev.render_layout:
+        require(layout_ref == slot["brief"].get("layout_reference"),
+                "Render and stage layout evidence with edition set-layout --stage")
     if isinstance(layout_ref, dict) and layout_ref.get("file") and not layout_ref.get("sha256"):
         brief["layout_reference"] = {**blob(rev.root, rev.file(layout_ref["file"])),
-                                     "role": layout_ref.get("role")}
-    page["art"][op["kind"]]["brief"] = brief
+                                     **{k: layout_ref[k] for k in ("role", "rendered") if k in layout_ref}}
+    slot["brief"] = brief
 
 
 def op_text(rev, op, page):
@@ -192,12 +198,15 @@ OPERATIONS = {**EDITION_OPERATIONS, **PAGE_OPERATIONS}
 def revise(args):
     root = args.project
     before = load_edition(root)
+    emit(apply_revision(root, before, load(args.operation), args.operation.parent))
+
+
+def apply_revision(root, before, spec, folder, *, render_layout=False):
     edition = deepcopy(before)
-    spec = load(args.operation)
     require(spec["revision"] == before["revision"], "Edition changed since the operation was prepared")
     require(prose(spec.get("editor")) and prose(spec.get("reason")) and spec["operations"],
             "A revision needs a named editor, reason and operations")
-    rev = Revision(root, edition, spec, args.operation.parent)
+    rev = Revision(root, edition, spec, folder, render_layout=render_layout)
     for op in spec["operations"]:
         action = op["op"]
         if action in EDITION_OPERATIONS:
@@ -213,4 +222,4 @@ def revise(args):
     require(fingerprint(edition) != fingerprint(before), "This operation makes no edition change")
     layout(root, edition)
     result = publish(root, edition, before["revision"])
-    emit(changes(root, before, result))
+    return changes(root, before, result)
