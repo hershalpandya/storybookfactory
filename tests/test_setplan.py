@@ -51,6 +51,26 @@ def test_turning_the_camera_flips_the_derived_order(tmp_path):
     assert south_text.endswith("A white divider runs along the front.") and "divider in the" not in south_text
 
 
+def test_set_layout_checks_omit_fully_occluded_elements(tmp_path):
+    screen = {"kind": "box", "x": 0, "z": 4, "width": 2, "depth": 1, "height": 2,
+              "colour": [100, 100, 100]}
+    marker = {"kind": "sphere", "x": 0, "y": 1, "z": 8, "radius": 0.4,
+              "facts": "a round marker", "colour": [0, 100, 100]}
+    plan = {"objects": {"screen": screen, "hidden-marker": marker,
+                        "visible-marker": {**marker, "x": 2.8}},
+            "shots": {"page": {"camera": {"pos": [0, 1, 0], "yaw": 0, "pitch": 0}}}}
+    spec = tmp_path / "plan.json"
+    spec.write_text(json.dumps(plan), encoding="utf-8")
+    out = tmp_path / "layout"
+    result = json.loads(run("edition", "set-layout", tmp_path, spec, "page", out).stdout)
+
+    assert "hidden-marker" not in result["visible"]
+    assert "set-hidden-marker" not in result["checks"]
+    assert "hidden-marker" not in result["text"]
+    assert "visible-marker" in result["visible"]
+    assert "set-visible-marker" in result["checks"]
+
+
 def test_plan_validation_and_unknown_actor(tmp_path):
     with pytest.raises(ProjectError, match="kind"):
         bad = tmp_path / "bad.json"

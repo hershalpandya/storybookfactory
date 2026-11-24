@@ -6,18 +6,28 @@ import unicodedata
 from .store import ProjectError, load, project_file, require
 
 PROJECT_FILE = "textspec.json"
+WORD = re.compile(r"[a-z]+(?:-[a-z]+)*")
+PUNCTUATION = str.maketrans({"’": "'", "«": '"', "»": '"', "“": '"', "”": '"', "—": ",", "–": ",",
+                            "‐": "-", "‑": "-"})
 PLURAL_DETERMINERS = {"des", "les", "leurs", "nos", "mes", "ses", "vos", "tous", "toutes", "aux"}
 NUMBERS = {"deux": 2, "trois": 3, "quatre": 4, "cinq": 5, "six": 6, "sept": 7, "huit": 8, "neuf": 9, "dix": 10}
+COUNT_MODIFIERS = {"autres", "beaux", "belles", "grands", "grandes", "jolis", "jolies",
+                   "nouveaux", "nouvelles", "petits", "petites", "vieux", "vieilles"}
 
 
 def fold(text):
     """Lower-case, strip accents and normalise apostrophes so lexicon keys match."""
-    text = unicodedata.normalize("NFKD", text.replace("’", "'")).encode("ascii", "ignore").decode()
+    text = unicodedata.normalize("NFKD", text.translate(PUNCTUATION)).encode("ascii", "ignore").decode()
     return text.lower()
 
 
-def words(text):
-    return re.findall(r"[a-z]+", fold(text))
+def adjoining_word(text, tokens, index):
+    """Get the word directly before the indexed token if only whitespace separates them."""
+    if index:
+        previous = tokens[index - 1]
+        if text[previous.end():tokens[index].start()].isspace():
+            return previous.group()
+    return ""
 
 
 def project_lexicon(root):
@@ -42,22 +52,23 @@ def required_checks(text, world=None, references=(), lexicon=None):
     """Required check IDs and expectations from declared vocabulary and visible elements."""
     lexicon = lexicon if lexicon is not None else project_lexicon(None)
     table, plural_forms = lexicon["words"], lexicon["plural_forms"]
-    tokens = words(text)
+    folded = fold(text)
+    tokens = list(WORD.finditer(folded))
     found = {}
-    for index, token in enumerate(tokens):
+    for index, match in enumerate(tokens):
+        token = match.group()
         if token not in table:
             continue
         group, subjects = table[token]
-        before = tokens[max(0, index - 2):index]
-        count = next((NUMBERS[w] for w in before if w in NUMBERS), None)
-        plural = token in plural_forms or (any(w in PLURAL_DETERMINERS for w in before[-1:])
-                                           and token.endswith(("s", "x")))
+        before = adjoining_word(folded, tokens, index)
+        number = adjoining_word(folded, tokens, index - 1) if before in COUNT_MODIFIERS else before
+        count = NUMBERS.get(number)
+        plural = token in plural_forms or (before in PLURAL_DETERMINERS and token.endswith(("s", "x")))
         minimum = count or (2 if plural else 1)
         entry = found.setdefault(group, {"subjects": subjects, "minimum": 0, "exact": None})
         entry["minimum"] = max(entry["minimum"], minimum)
         if count:
             entry["exact"] = count
-    folded = fold(text)
     for pattern, subject in lexicon["named"]:
         if pattern.search(folded):
             found.setdefault(f"named-{subject}", {"subjects": [subject], "minimum": 1, "exact": None})

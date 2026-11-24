@@ -141,8 +141,9 @@ These guarantees run locally and make no provider call.
 ## Project vocabulary and relationships
 
 Put `textspec.json` beside `edition.json` to specify what the text checks should
-recognize. Vocabulary comes from this file. Counts use French numbers and
-determiners.
+recognize. Vocabulary comes from this file. Exact counts use supported French
+number words next to the noun, with support for common intervening adjectives.
+Punctuation between the number and noun breaks the match.
 
 ```json
 {
@@ -177,7 +178,8 @@ Coordinates are in metres with x east, z north and y up.
 - Give each element a `label`, `facts` and, if useful, a `count` expectation.
   Use `fixture: true` for order and placement checks. Set `describe: false`
   to keep an element out of the left-to-right sentence and use `visible_note`
-  for an extra statement when it is visible.
+  for an extra statement when it is visible. Derived checks and descriptions
+  use the pixels visible after foreground elements are rendered.
 - `actors`: one coloured block per character or moving element. Set `width`,
   `height`, `colour`, `label` and `colour_name`.
 - `shots`: one entry per page, with a `camera` and positions for

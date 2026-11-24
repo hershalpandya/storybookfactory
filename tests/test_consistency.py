@@ -38,6 +38,24 @@ def test_text_checks_follow_plurals_numbers_contacts_and_residents(tmp_path):
     assert textspec.slot_findings(page, brief, world, lexicon) == {}
 
 
+@pytest.mark.parametrize(("text", "expectation"), [
+    ("Il est trois. Les cartes sont prêtes.", "at least two"),
+    ("Il en reste trois, les cartes sont sur la table.", "at least two"),
+    ("Affiche quatre cartes.", "exactly 4"),
+    ("Il y a quatre petites cartes.", "exactly 4"),
+    ("Il reste vingt-deux cartes.", "at least two"),
+    ("Il en reste trois — cartes et tickets sont mêlés.", "at least two"),
+])
+def test_text_check_counts_the_declared_noun(tmp_path, text, expectation):
+    from storybook_toolkit import textspec
+
+    write(tmp_path / "textspec.json", {
+        "words": {"cartes": ["card", ["card"]]}, "plural_forms": ["cartes"],
+    })
+    checks = textspec.required_checks(text, lexicon=textspec.project_lexicon(tmp_path))
+    assert f": {expectation} visible" in checks["text-card"]
+
+
 def canvas(path, colour="white", box=None, fill="red"):
     image = Image.new("RGB", (300, 200), colour)
     if box:

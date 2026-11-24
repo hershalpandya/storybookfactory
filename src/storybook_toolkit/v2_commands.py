@@ -99,7 +99,7 @@ def set_layout(args):
     args.output.mkdir(parents=True)
     layout = args.output / "layout.png"
     visible = setplan.render(plan, shot, layout)
-    actors = shot.get("actors", {})
+    actors = [actor for actor in shot.get("actors", {}) if actor in visible]
     result = {"page": args.page, "plan": str(plan_path), "layout": str(layout), "visible": visible,
               "text": setplan.describe(plan, visible), "checks": setplan.checks(plan, visible, actors)}
     if args.top:

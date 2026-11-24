@@ -143,12 +143,15 @@ def render(plan, shot, target):
     for y in range(H):
         t = y / H
         draw.line([(0, y), (W, y)], fill=(int(150 + 80 * t), int(195 + 40 * t), 245))
-    boxes = {}
+    ownership = Image.new("I", img.size)
+    owner_draw = ImageDraw.Draw(ownership)
+    tag_ids = {}
+    distances = {}
 
-    def note(tag, us, vs, dist):
-        b = boxes.setdefault(tag, [1e9, 1e9, -1e9, -1e9, 1e9])
-        b[0], b[1], b[2], b[3] = min(b[0], *us), min(b[1], *vs), max(b[2], *us), max(b[3], *vs)
-        b[4] = min(b[4], dist)
+    def owner_id(tag, distance):
+        ident = tag_ids.setdefault(tag, len(tag_ids) + 1)
+        distances[ident] = min(distance, distances.get(ident, distance))
+        return ident
 
     def paint(poly3, colour, tag, record=True):
         v = clip([cam.view(p) for p in poly3])
@@ -157,7 +160,8 @@ def render(plan, shot, target):
         pts = [cam.screen(p) for p in v]
         draw.polygon(pts, fill=colour)
         if record:
-            note(tag, [p[0] for p in pts], [p[1] for p in pts], min(math.hypot(p[0], p[2]) for p in v))
+            distance = min(math.hypot(p[0], p[2]) for p in v)
+            owner_draw.polygon(pts, fill=owner_id(tag, distance))
 
     for poly, colour, tag in sorted(ground, key=lambda f: -sum(cam.view(p)[2] for p in f[0]) / 4):
         paint(poly, colour, tag, record=False)
@@ -178,16 +182,29 @@ def render(plan, shot, target):
             continue
         u, w = cam.screen(v)
         r = cam.focal * radius / v[2]
-        draw.ellipse([u - r, w - r * 0.85, u + r, w + r * 0.85], fill=colour)
+        bounds = [u - r, w - r * 0.85, u + r, w + r * 0.85]
+        draw.ellipse(bounds, fill=colour)
         draw.ellipse([u - r * 0.6, w - r * 0.75, u + r * 0.3, w], fill=shade(colour, 1.15))
-        note(tag, [u - r, u + r], [w - r, w + r], math.hypot(v[0], v[2]))
+        owner_draw.ellipse(bounds, fill=owner_id(tag, math.hypot(v[0], v[2])))
     img.save(target)
+
+    # Rasterize element IDs in the same draw order as the image. Only the topmost ID survives per pixel.
+    boxes = {ident: [W, H, 0, 0] for ident in tag_ids.values()}
+    for offset, ident in enumerate(ownership.get_flattened_data()):
+        if ident == 0:
+            continue
+        y, x = divmod(offset, W)
+        box_ = boxes[ident]
+        box_[0] = min(box_[0], x)
+        box_[1] = min(box_[1], y)
+        box_[2] = max(box_[2], x + 1)
+        box_[3] = max(box_[3], y + 1)
     visible = {}
-    for tag, (u0, v0, u1, v1, dist) in boxes.items():
-        cu0, cv0, cu1, cv1 = max(0, u0), max(0, v0), min(W, u1), min(H, v1)
-        if cu1 - cu0 > 4 and cv1 - cv0 > 4:
-            visible[tag] = {"box": [round(cu0 / W, 3), round(cv0 / H, 3), round(cu1 / W, 3), round(cv1 / H, 3)],
-                            "distance_m": round(dist, 1)}
+    for tag, ident in tag_ids.items():
+        u0, v0, u1, v1 = boxes[ident]
+        if u1 - u0 > 4 and v1 - v0 > 4:
+            visible[tag] = {"box": [round(u0 / W, 3), round(v0 / H, 3), round(u1 / W, 3), round(v1 / H, 3)],
+                            "distance_m": round(distances[ident], 1)}
     return visible
 
 
