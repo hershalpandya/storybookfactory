@@ -2,6 +2,8 @@
 name: storybook-image
 description: Use before and during any image provider call for a storybook — root character/prop profiles, scene illustrations, colouring graphics or targeted edits. Covers set preflight, attempt journaling, frozen checklists, pixel review and the retry limit that keeps image rounds cheap.
 ---
+
+<!-- Author: Hershal Pandya — https://www.linkedin.com/in/hershalpandya/ -->
 # Storybook image workflow
 
 Use the provider named in the owner's plan. For editions, use `storybook edition gemini` for Gemini or the `edition art-*` journal commands for an externally operated provider. Start with a dry run and follow `docs/EDITIONS.md`. Keep the private story, references, prompts and results in the owner's chosen local project; send images to a provider only under the owner's existing authorization.

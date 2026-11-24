@@ -1,3 +1,4 @@
+# Author: Hershal Pandya — https://www.linkedin.com/in/hershalpandya/
 """Set plans: one 3D plan per set, rendered locally per page camera, with derived wording, checks and scores."""
 
 from copy import deepcopy

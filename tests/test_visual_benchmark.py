@@ -1,3 +1,4 @@
+# Author: Hershal Pandya — https://www.linkedin.com/in/hershalpandya/
 """Offline benchmark of the gates and scorer with authored visual observations."""
 
 import json

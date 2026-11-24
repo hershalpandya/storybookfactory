@@ -1,3 +1,4 @@
+# Author: Hershal Pandya — https://www.linkedin.com/in/hershalpandya/
 """The `storybook edition` command group."""
 
 from pathlib import Path

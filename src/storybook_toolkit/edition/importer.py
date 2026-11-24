@@ -1,3 +1,4 @@
+# Author: Hershal Pandya — https://www.linkedin.com/in/hershalpandya/
 """Import a reviewed scene-plan project into a new edition."""
 
 from copy import deepcopy

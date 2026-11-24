@@ -1,3 +1,4 @@
+# Author: Hershal Pandya — https://www.linkedin.com/in/hershalpandya/
 """Plan v2: text-derived checks, drift gate, colouring metrics, sheets, input budget, scorecard, next action."""
 
 import json

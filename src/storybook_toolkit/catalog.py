@@ -1,3 +1,4 @@
+# Author: Hershal Pandya — https://www.linkedin.com/in/hershalpandya/
 """Story-local character and prop catalogs and approved root reference assets."""
 
 from pathlib import Path

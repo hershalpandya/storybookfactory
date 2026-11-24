@@ -2,6 +2,8 @@
 name: storybook
 description: Use when creating, resuming or revising an illustrated storybook from English transcripts with the storybook CLI — registering transcripts, reconciling the source, adapting to the story language, planning beats/scenes/catalogs, or rendering and proofing the book. For the image generation and review loop itself, use storybook-image.
 ---
+
+<!-- Author: Hershal Pandya — https://www.linkedin.com/in/hershalpandya/ -->
 # Storybook workflow
 
 Use English for the conversation, instructions and image requests. Ask for the private project location, one or more English UTF-8 transcripts, intended reader and story language, and whether to continue an earlier series (its private catalog and art) or start a new one. Ask about existing progress before creating anything; resume from saved artifacts. Never claim a review, audio check, image generation or physical proof that did not happen. Keep private material outside Git and obtain the owner's agreement before sending it or references to any external service.

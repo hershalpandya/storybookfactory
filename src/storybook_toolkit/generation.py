@@ -1,3 +1,4 @@
+# Author: Hershal Pandya — https://www.linkedin.com/in/hershalpandya/
 """Gemini dispatch policy for editions: the owner's budget, generation packets, review gates, pauses and resume.
 
 The journal is written before the paid request. The HTTP adapter lives in providers/gemini_http.py;

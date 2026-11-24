@@ -1,3 +1,4 @@
+# Author: Hershal Pandya — https://www.linkedin.com/in/hershalpandya/
 """Project storage primitives shared by every command module.
 
 This module imports nothing from the package: errors, JSON I/O, atomic writes, hashing, the project write

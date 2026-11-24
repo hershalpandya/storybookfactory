@@ -1,3 +1,4 @@
+# Author: Hershal Pandya — https://www.linkedin.com/in/hershalpandya/
 """Scene-plan (scenes.json) books: layout preflight and the PDF render of a registered asset set."""
 
 import contextlib

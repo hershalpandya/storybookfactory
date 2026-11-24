@@ -1,3 +1,4 @@
+# Author: Hershal Pandya — https://www.linkedin.com/in/hershalpandya/
 """Exercise the checkout workflow export through the public CLI."""
 
 from pathlib import Path

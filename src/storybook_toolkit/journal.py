@@ -1,3 +1,4 @@
+# Author: Hershal Pandya — https://www.linkedin.com/in/hershalpandya/
 """Attempt journals: generation-runs/<run>/run.json, its intake/, images/ and reviews/.
 
 Every workflow that sends work to an image provider (legacy benchmarks, external art rounds, the Gemini

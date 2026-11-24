@@ -1,3 +1,4 @@
+# Author: Hershal Pandya — https://www.linkedin.com/in/hershalpandya/
 """Compile a page's set, blocking, references and visual acceptance contract."""
 
 import json

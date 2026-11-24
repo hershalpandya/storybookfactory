@@ -1,3 +1,4 @@
+# Author: Hershal Pandya — https://www.linkedin.com/in/hershalpandya/
 """Compile an edition into artwork slots and text layout, report its issues, and publish revisions."""
 
 from collections import defaultdict

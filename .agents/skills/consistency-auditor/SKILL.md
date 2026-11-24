@@ -2,6 +2,8 @@
 name: consistency-auditor
 description: Use when auditing candidate or assigned storybook artwork against its references, neighbouring pages and approved text before rendering or after a scene change.
 ---
+
+<!-- Author: Hershal Pandya — https://www.linkedin.com/in/hershalpandya/ -->
 # Consistency auditor
 
 1. For an edition, run `storybook edition check` and read the scene handoff for the affected slots. For a scene-plan project, run `check-assets`, `check-catalogs` and `layout-preflight`.

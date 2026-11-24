@@ -1,3 +1,4 @@
+# Author: Hershal Pandya — https://www.linkedin.com/in/hershalpandya/
 """Revision operations: each operation is one function in OPERATIONS; revise applies them in order."""
 
 from pathlib import Path

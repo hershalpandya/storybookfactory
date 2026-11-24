@@ -1,3 +1,4 @@
+# Author: Hershal Pandya — https://www.linkedin.com/in/hershalpandya/
 """Command-line wiring for the storybook toolkit: one parser, every module's commands, one exit code.
 
 Each command module exposes ``register(subparsers)``; edition.register returns the helper through which

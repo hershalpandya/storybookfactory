@@ -1,3 +1,4 @@
+# Author: Hershal Pandya — https://www.linkedin.com/in/hershalpandya/
 """The scene-plan (scenes.json, formats 1 to 3) workflow that predates editions.
 
 scenes         scene plans, the asset registry and the scene handoff

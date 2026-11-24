@@ -1,3 +1,4 @@
+# Author: Hershal Pandya — https://www.linkedin.com/in/hershalpandya/
 """Project storage primitives: atomic writes, JSON round trip, the write lock, fingerprints and the import graph."""
 
 import ast

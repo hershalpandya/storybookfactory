@@ -1,3 +1,5 @@
+<!-- Author: Hershal Pandya — https://www.linkedin.com/in/hershalpandya/ -->
+
 # Storybook Factory agent instructions
 
 This Python toolkit turns reviewed English transcripts into illustrated French CE1 storybooks. Start with [README.md](README.md) for story setup and [CONTRIBUTING.md](CONTRIBUTING.md) for code, testing, and when to use each skill.

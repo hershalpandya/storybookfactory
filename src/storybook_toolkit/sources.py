@@ -1,3 +1,4 @@
+# Author: Hershal Pandya — https://www.linkedin.com/in/hershalpandya/
 """Commands for preparing human-reviewed story sources: transcripts, the reviewed story and its adaptation."""
 
 import difflib

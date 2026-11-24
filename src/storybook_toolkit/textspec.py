@@ -1,3 +1,4 @@
+# Author: Hershal Pandya — https://www.linkedin.com/in/hershalpandya/
 """Derive visual checks from project-declared characters and story elements."""
 
 import re

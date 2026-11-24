@@ -1,3 +1,4 @@
+# Author: Hershal Pandya — https://www.linkedin.com/in/hershalpandya/
 """The command-line surface: entry points and the public command names."""
 
 from importlib import metadata

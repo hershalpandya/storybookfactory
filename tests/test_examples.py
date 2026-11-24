@@ -1,3 +1,4 @@
+# Author: Hershal Pandya — https://www.linkedin.com/in/hershalpandya/
 """The README quickstart example builds a reading preview from its files, offline."""
 
 import json

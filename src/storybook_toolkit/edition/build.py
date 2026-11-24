@@ -1,3 +1,4 @@
+# Author: Hershal Pandya — https://www.linkedin.com/in/hershalpandya/
 """Edition commands that read a revision: check, review records, handoff packets and PDF builds."""
 
 from datetime import UTC, datetime

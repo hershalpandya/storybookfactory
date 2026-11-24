@@ -1,3 +1,4 @@
+# Author: Hershal Pandya — https://www.linkedin.com/in/hershalpandya/
 """Plan v2 consistency tools: drift gate, colouring metrics, cast and contact sheets, scorecard, next action.
 
 All of these run locally and make no provider call.
