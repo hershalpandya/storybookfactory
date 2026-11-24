@@ -3,6 +3,7 @@
 The scene-plan commands (layout-preflight, render) live in legacy/book.py and are re-exported at the end.
 """
 from importlib import resources
+from io import BytesIO
 import re
 
 from PIL import Image, ImageDraw, ImageFont, features
@@ -126,16 +127,21 @@ def _center(pdf, text, y, size, font_path):
     _draw_line(pdf, img, (W-img.width/SCALE)/2, y)
 
 
-def _picture(pdf, path, box):
+def _picture(pdf, path, box, *, compact=False):
     try:
         with Image.open(path) as image:
             image.load()
             iw, ih = image.size
             image = image.convert('RGBA')
+            source = image
+            if compact and image.getchannel("A").getextrema() == (255, 255):
+                source = BytesIO()
+                image.convert("RGB").save(source, "JPEG", quality=90, subsampling=0)
+                source.seek(0)
             x, y, w, h = box
             scale = min(w/iw, h/ih)
             ww, hh = iw*scale, ih*scale
-            pdf.drawImage(ImageReader(image), x+(w-ww)/2, y+(h-hh)/2, ww, hh, mask='auto')
+            pdf.drawImage(ImageReader(source), x+(w-ww)/2, y+(h-hh)/2, ww, hh, mask='auto')
     except (OSError, ValueError) as exc:
         raise ProjectError(f'Cannot decode image {path}: {exc}') from exc
 
@@ -193,7 +199,7 @@ def typeset(pages, font_path, *, keep_french_punctuation=False, overflow="{page}
 MODES = ('reading', 'single-sided', 'duplex', 'single-sided-printer-safe', 'duplex-printer-safe', 'duplex-bound')
 
 
-def render_book(out, metadata, font_path, prepared, assets, cover_art, modes=MODES):
+def render_book(out, metadata, font_path, prepared, assets, cover_art, modes=MODES, *, compact_reading=()):
     for mode in modes:
         bound = mode.endswith('-bound')
         safe = mode.endswith('-printer-safe')
@@ -237,7 +243,8 @@ def render_book(out, metadata, font_path, prepared, assets, cover_art, modes=MOD
             back = duplex and pdf.getPageNumber() % 2 == 0
             # Reserve a separate bottom corner for colouring; scene never overlays text.
             for kind, box in artwork_boxes(height, back).items():
-                _picture(pdf, assets[(page['id'], kind)], box)
+                _picture(pdf, assets[(page['id'], kind)], box,
+                         compact=mode == "reading" and kind == "illustration" and page["id"] in compact_reading)
             y = H-38
             for line in lines:
                 if line is None: y -= 6

@@ -8,6 +8,7 @@ A two-page story that goes from a transcript to a reading-preview PDF in under a
 | `reviewed-story.json` | The story-only English passages, each citing its transcript line | Your agent drafts it; a person checks it against the transcript |
 | `french.json` | The French CE1 adaptation, one passage per source passage, linked to the reviewed story's hash | Your agent drafts it; a French reader checks it |
 | `edition-index.json` | Events, pages (text and picture briefs), covers and the Gemini budget | Your agent drafts it from the story |
+| `meadow.json` | Shared setting geometry and both page cameras | Your agent stages and checks the camera views |
 | `metadata.json` | Title, author, date and back-cover title | You |
 
 The two review files say "Example reviewer". In your own book, put the name of the person who actually checked the text. The toolkit records that as an assertion, so never claim a review that did not happen.
@@ -39,13 +40,30 @@ contains `reviewed-text.json` and `proof-report.json`. The workspace's
 The PDF shows the cover, two story pages and the back cover, with shaped French
 text and placeholder artwork. `edition check` lists the six open art slots.
 
+## Preview the recurring setting
+
+With the same `P` and `E` from the commands above, render both cameras and
+stage the resulting attachments and checks. These commands run offline.
+
+```sh
+D="$P/book-edition"
+mkdir -p "$D/set-plans"
+cp "$E/meadow.json" "$D/set-plans/meadow.json"
+uv run --locked storybook edition set-layout "$D" set-plans/meadow.json p01 "$D/artwork-preparation/layout-p01" --stage
+uv run --locked storybook edition set-layout "$D" set-plans/meadow.json p02 "$D/artwork-preparation/layout-p02" --stage
+uv run --locked storybook edition gemini "$D" p02/illustration --dry-run
+```
+
+Compare the two `layout.png` files and look for the staged layout in
+`ordered_inputs` in the dry-run output. Inspect the landmark order and actor
+positions in each camera view before reviewing the scene for dispatch.
+
 ## Next steps toward a finished book
 
 1. **Choose an image provider:** `uv run --locked storybook provider status projects/pip-workspace-example/book-edition` explains the options (a Gemini API key, or a subscription tool such as Codex). See `docs/PROVIDERS.md`.
 2. **Make the art:**
    - Generate a cast sheet and a set picture, then one illustration per page, with checks derived from the French text (`storybook edition textspec`).
    - Make batched colouring outlines.
-   - For a set seen from several angles, add a set plan and its rendered layouts (`storybook edition set-layout`).
 
    `docs/EDITIONS.md` has every command. The `storybook-image` skill runs this loop for your agent.
 3. **Review and build:** record a visual review for every picture and the text-layout review, then build the reading and print PDFs and check a printed proof.

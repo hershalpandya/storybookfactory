@@ -1,0 +1,22 @@
+{
+  "objects": {
+    "meadow": {"kind": "ground", "x": [-20, 20], "z": [-10, 30], "colour": [146, 179, 103]},
+    "tree": {"kind": "group", "label": "the oak", "fixture": true, "count": "one oak", "parts": [
+      {"kind": "box", "x": -5, "z": 9, "width": 0.6, "depth": 0.6, "height": 3, "colour": [124, 88, 61]},
+      {"kind": "sphere", "x": -5, "y": 4, "z": 9, "radius": 2, "colour": [86, 134, 64]}
+    ]},
+    "rock": {"kind": "sphere", "label": "the grey boulder", "fixture": true, "count": "one grey boulder",
+             "x": 5, "y": 0.55, "z": 11, "radius": 0.75, "colour": [126, 131, 143]}
+  },
+  "actors": {
+    "pip": {"label": "Pip", "width": 0.7, "height": 0.9, "colour": [245, 245, 245], "colour_name": "white"},
+    "nell": {"label": "Nell", "width": 0.7, "height": 0.9, "colour": [155, 97, 64], "colour_name": "brown"},
+    "kite": {"label": "the kite", "width": 0.7, "height": 0.7, "colour": [230, 50, 50], "colour_name": "red"}
+  },
+  "shots": {
+    "p01": {"camera": {"pos": [0, 1.7, -2], "yaw": 0, "pitch": 6},
+            "actors": {"pip": [1, 7], "kite": [3, 12, 4]}},
+    "p02": {"camera": {"pos": [0, 1.7, 24], "yaw": 180, "pitch": 6},
+            "actors": {"pip": [1, 10], "nell": [0, 10], "kite": [2, 7, 4]}}
+  }
+}

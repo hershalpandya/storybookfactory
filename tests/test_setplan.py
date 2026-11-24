@@ -1,13 +1,15 @@
 """Set plans: one 3D plan per set, rendered locally per page camera, with derived wording, checks and scores."""
 
+from copy import deepcopy
 import json
+from types import SimpleNamespace
 
 import pytest
 from PIL import Image
 
-from storybook_toolkit import setplan
-from storybook_toolkit.store import ProjectError
-from support import run
+from storybook_toolkit import edition, gemini, setplan
+from storybook_toolkit.store import ProjectError, load
+from support import picture, revise, run, write
 
 PLAN = {
     "objects": {
@@ -106,3 +108,104 @@ def test_set_layout_command_composes_a_sheet_and_scores(tmp_path):
     report = json.loads(run("edition", "set-score", project, tmp_path / "answers.json", "--key",
                             tmp_path / "key.json").stdout)
     assert report["images"]["img-A"]["rate"] == 0.5 and report["arms"]["layout"]["rate"] == 1.0
+
+
+@pytest.fixture
+def recurring_edition(delivery):
+    source, root, spec, _ = delivery
+    operations = []
+    for page in spec["pages"]:
+        brief = page["art"]["illustration"]["brief"]
+        del brief["standalone_reason"]
+        brief.update(setting="garden", visual_checks={"action": "The ticket is held by its handle."})
+        if page["id"] == "outbound":
+            brief["comparison_references"] = [{"page": "delivery", "role": "Match the brushwork."}]
+        operations.append({"op": "stage", "kind": "illustration", "page": page["id"], "brief": brief})
+    revise(root, source / "recurring.json", *operations,
+           {"op": "unassign", "kind": "illustration", "page": "outbound", "reason": "Generate a fresh scene"})
+    plan = deepcopy(PLAN)
+    plan["shots"] = {"outbound": plan["shots"]["north"], "delivery": plan["shots"]["south"]}
+    (root / "set-plans").mkdir()
+    plan_path = write(root / "set-plans" / "garden.json", plan)
+    return root, plan_path
+
+
+def test_fresh_gemini_scene_requires_the_current_rendered_layout(recurring_edition, tmp_path, capsys):
+    root, plan = recurring_edition
+    slot = "outbound/illustration"
+    args = SimpleNamespace(project=root, slot=slot, parent=None, edit=None, dry_run=False)
+
+    class Provider:
+        def __init__(self):
+            self.calls = []
+
+        def present(self):
+            return True
+
+        def send(self, project, packet):
+            self.calls.append(packet)
+            return picture(tmp_path / "candidate.png", 209).read_bytes(), "fixture-image", {}
+
+    provider = Provider()
+    with pytest.raises(ProjectError, match="missing rendered layout.*--stage"):
+        gemini.dispatch(args, provider)
+    assert not gemini.journal(root)[0].exists()
+    info = json.loads(run("edition", "next", root).stdout)
+    assert info["action"] == "prepare-layout" and "set-plans/garden.json" in info["detail"]
+
+    def stage(output):
+        return json.loads(run("edition", "set-layout", root, "set-plans/garden.json", "outbound",
+                              root / output, "--stage").stdout)
+
+    stage("first-layout")
+    handoff = json.loads(run("scene-handoff", root, "--page", "outbound", "--kind", "illustration").stdout)
+    ref = handoff["brief"]["layout_reference"]
+    assert {"action", "count-pond", "order-shed-pond"} <= handoff["brief"]["visual_checks"].keys()
+    dry = json.loads(run("edition", "gemini", root, slot, "--dry-run").stdout)
+    assert any(ref["sha256"] == item["sha256"] for item in dry["ordered_inputs"])
+    assert "Layout from this camera" in dry["prompt"]
+    assert not any("neighbour" in warning for warning in dry["warnings"])
+
+    updated = load(plan)
+    updated["shots"]["outbound"]["camera"]["yaw"] = 5
+    write(plan, updated)
+    with pytest.raises(ProjectError, match="stale rendered layout.*--stage"):
+        gemini.dispatch(args, provider)
+    assert not gemini.journal(root)[0].exists() and not provider.calls
+    stage("second-layout")
+    revision = edition.load_edition(root)["revision"]
+    run("edition", "review", root, slot, "--revision", revision, "--role", "director",
+        "--reviewer", "Fixture director", "--decision", "approved", "--evidence", "Camera and roster checked.")
+    attempt = gemini.dispatch(args, provider)
+    capsys.readouterr()
+    assert attempt["status"] == "captured" and len(provider.calls) == 1
+    assert "Layout from this camera" in provider.calls[0]["prompt"]
+    run("edition", "gemini-quality", root, attempt["attempt"], "pass", "--reviewer", "Fixture reviewer",
+        "--seconds", 1, "--evidence", "Fixture landmarks and handle checked.")
+    revise(root, tmp_path / "assign.json", {"op": "assign", "kind": "illustration", "page": "outbound",
+                                          "attempt": attempt["attempt"], "reason": "Reviewed fixture"})
+    run("edition", "review", root, slot, "--revision", edition.load_edition(root)["revision"], "--role", "visual",
+        "--reviewer", "Fixture reviewer", "--decision", "approved", "--evidence", "Assigned pixels checked.")
+    report = json.loads(run("edition", "check", root).stdout)
+    row = next(row for row in report["slots"] if row["slot"] == slot)
+    assert row["issues"] == [] and row["disposition"] == "reuse"
+    assert "delivery/illustration" in report["generation_layout_blockers"]
+
+
+def test_manual_reservation_requires_the_staged_asset_not_a_comparison(recurring_edition, tmp_path):
+    root, _ = recurring_edition
+    slot = "outbound/illustration"
+    run("edition", "set-layout", root, "set-plans/garden.json", "outbound", tmp_path / "layout", "--stage")
+    brief = json.loads(run("scene-handoff", root, "--page", "outbound", "--kind", "illustration").stdout)
+    run("edition", "art-round", root, "fixture", write(tmp_path / "round.json", {
+        "provider": "Fixture operator", "objective": "Show the ticket pickup", "slots": [slot], "limit": 1,
+    }))
+    shot = {"prompt": "Show the ticket pickup in this camera view.", "inputs": brief["comparisons"]}
+    path = tmp_path / "shot.json"
+    error = run("edition", "art-start", root, "fixture", slot, write(path, shot), ok=False).stderr
+    assert "attach the staged rendered layout" in error
+    reference = brief["brief"]["layout_reference"]
+    shot["inputs"].append({key: reference[key] for key in ("file", "sha256", "role")})
+    reserved = json.loads(run("edition", "art-start", root, "fixture", slot, write(path, shot)).stdout)
+    assert reserved["attempt"] and reserved["inputs"][-1]["sha256"] == reference["sha256"]
+    assert {"count-pond", "action"} <= reserved["checks"].keys()

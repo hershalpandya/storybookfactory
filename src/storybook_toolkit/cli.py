@@ -59,7 +59,8 @@ def build_parser():
     parser = argparse.ArgumentParser(prog="storybook", description="Prepare human-reviewed storybook sources.")
     parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
     sub = parser.add_subparsers(dest="command", required=True)
-    p = sub.add_parser("export-workflow", help="Export agent instructions from the checkout to a new directory")
+    p = sub.add_parser("export-workflow", help="Export agent instructions from a checkout to a new directory",
+                       description="Run from a Storybook Factory checkout or a synced, unpacked source archive.")
     p.add_argument("directory", type=Path)
     p.set_defaults(func=export_workflow)
     sources.register(sub)

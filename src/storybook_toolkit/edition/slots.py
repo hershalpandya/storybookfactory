@@ -9,6 +9,7 @@ from ..textspec import project_lexicon, slot_findings
 from ..store import ProjectError, fingerprint, identifier, load, prose, require, sha256, strings, write_json
 from .manifest import DISPOSITIONS, KINDS, MANIFEST, ROLES, checked_path, load_edition, page_by_id, pages
 from .reviews import active_reviews, review_for
+from .scene_layouts import layered_brief
 
 
 def art_dependency(packet):
@@ -78,7 +79,9 @@ def compile_edition(root, edition):
                 layout_ref = brief["layout_reference"]
                 require(isinstance(layout_ref, dict) and prose(layout_ref.get("role")) and layout_ref.get("sha256"),
                         f"{page['id']}/{kind}: a layout reference needs file, sha256 and role")
-                checked_path(root, layout_ref)
+                if "rendered" not in layout_ref:
+                    checked_path(root, layout_ref)
+            brief = layered_brief(brief)
             refs = []
             for key in brief.get("references", []):
                 require(key in edition["roots"], f"{page['id']}/{kind}: unresolved reference {key}")

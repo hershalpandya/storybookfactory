@@ -23,7 +23,7 @@ Keep each story under `projects/`. Put agent reports, working documents and hand
 uv run --locked storybook init projects/my-story --workspace
 ```
 
-Open the generated `projects/my-story/README.md` for the file map. Reuse the same directory when resuming work.
+Choose a workspace path that does not exist yet. Open the generated `projects/my-story/README.md` for the file map. Reuse the same directory when resuming work.
 
 | Location | What goes there |
 | --- | --- |
@@ -35,6 +35,8 @@ Open the generated `projects/my-story/README.md` for the file map. Reuse the sam
 Open this checkout in a coding agent and give it a starting instruction:
 
 > Follow `.agents/skills/storybook/SKILL.md` to make a French CE1 storybook from `projects/my-story/inputs/transcript.txt`. Use the project layout in the README. Ask for source and adaptation review and confirm the image provider and budget before requesting art.
+
+For recurring settings, render and stage each page's camera view locally with `edition set-layout --stage` before submitting scene art. The [offline example](examples/pip-and-the-kite/README.md) walks through this step. For exported agent instructions and guides, run `storybook export-workflow NEW_DIRECTORY` from a checkout or a synced, unpacked source archive.
 
 Run `uv run --locked storybook edition build projects/my-story/book-edition --mode reading` for a preview. The command reports the new output path. Add `--final` after the artwork and layout approvals are current.
 

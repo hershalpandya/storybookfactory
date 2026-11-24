@@ -184,24 +184,36 @@ def scorecard(record, assigned_slots, issues=None):
 
 def next_action(project, manifest, record, reviews, packets):
     """The single next step for an agent following the edition, in generation-policy order."""
-    from .edition import art_dependency, review_for
-    slots = (manifest.get("generation") or {}).get("slots", [])
+    from .edition import art_dependency, director_dependency, review_for
+    from .edition.scene_layouts import blocker as layout_blocker
+    policy = manifest.get("generation") or {}
+    slots = policy.get("slots", [])
     attempts = list(record.get("attempts", {}).items())
-    if record.get("paused"):
-        return {"action": "resolve-pause", "detail": record["paused"],
+    exhausted = len(attempts) >= policy.get("max_submissions", float("inf"))
+    paused = record.get("paused")
+    if paused:
+        if exhausted and "ceiling" in paused["reason"].lower():
+            return {"action": "budget-exhausted", "detail": paused["reason"]}
+        return {"action": "resolve-pause", "detail": paused,
                 "command": f"storybook edition gemini-resume {project} --owner NAME --evidence TEXT"}
     for ident, attempt in attempts:
         if attempt["status"] == "captured" and attempt.get("quality") is None:
             return {"action": "review-capture", "slot": attempt["slot"], "attempt": ident,
                     "command": f"storybook edition gemini-quality {project} {ident} pass|localized|unusable "
                                "--reviewer NAME --seconds S --evidence TEXT"}
+    if not slots:
+        for slot in packets:
+            if blocked := layout_blocker(project, manifest, slot):
+                return {"action": "prepare-layout", "slot": slot, "detail": blocked}
     for slot in slots:
         if slot.endswith("/profile"):
             continue
         packet = packets.get(slot)
         if packet is None:
             continue
-        mine = [(i, a) for i, a in attempts if a["slot"] == slot]
+        dependency = director_dependency(packet)
+        mine = [(i, a) for i, a in attempts
+                if a["slot"] == slot and a.get("director_dependency") == dependency]
         latest = mine[-1][1] if mine else None
         approved = review_for(reviews, slot, art_dependency(packet))
         if packet.get("image") and approved and approved["decision"] == "approved":
@@ -212,6 +224,11 @@ def next_action(project, manifest, record, reviews, packets):
         if packet.get("image"):
             return {"action": "visual-review", "slot": slot,
                     "command": f"storybook edition review {project} {slot} --role visual ..."}
+        if exhausted:
+            return {"action": "budget-exhausted", "slot": slot, "detail": "The approved submission ceiling is reached"}
+        blocked = layout_blocker(project, manifest, slot)
+        if blocked and not (latest and latest.get("quality") == "localized" and not latest.get("parent")):
+            return {"action": "prepare-layout", "slot": slot, "detail": blocked}
         if latest and latest.get("quality") == "localized" and not latest.get("parent"):
             return {"action": "targeted-edit", "slot": slot, "attempt": mine[-1][0],
                     "command": f"storybook edition gemini {project} {slot} --parent {mine[-1][0]} --edit TEXT --region x0,y0,x1,y1"}
