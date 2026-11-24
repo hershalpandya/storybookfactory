@@ -1,3 +1,4 @@
+# Author: Hershal Pandya — https://www.linkedin.com/in/hershalpandya/
 """Exercise a fresh series with no series manifest or farm-specific entities."""
 
 from copy import deepcopy

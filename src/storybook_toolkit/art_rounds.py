@@ -1,3 +1,4 @@
+# Author: Hershal Pandya — https://www.linkedin.com/in/hershalpandya/
 """Bounded, human-authorized rounds for artwork created in an external UI."""
 
 from pathlib import Path

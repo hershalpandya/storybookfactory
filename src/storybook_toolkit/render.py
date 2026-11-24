@@ -1,3 +1,4 @@
+# Author: Hershal Pandya — https://www.linkedin.com/in/hershalpandya/
 """Book geometry, typesetting and PDF drawing shared by editions and scene-plan books.
 
 The scene-plan commands (layout-preflight, render) live in legacy/book.py and are re-exported at the end.

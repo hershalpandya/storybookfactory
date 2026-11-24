@@ -1,3 +1,4 @@
+# Author: Hershal Pandya — https://www.linkedin.com/in/hershalpandya/
 """Inspect decoded print pixels independently of PNG metadata and visual claims."""
 
 from io import BytesIO

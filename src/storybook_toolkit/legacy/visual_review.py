@@ -1,3 +1,4 @@
+# Author: Hershal Pandya — https://www.linkedin.com/in/hershalpandya/
 """Compare independent visual observations with the compiled scene contract."""
 
 from pathlib import Path

@@ -1,3 +1,4 @@
+# Author: Hershal Pandya — https://www.linkedin.com/in/hershalpandya/
 """Review records: each review is valid only while the dependency it names is unchanged."""
 
 from ..store import load, prose, require, write_json

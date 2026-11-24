@@ -1,3 +1,4 @@
+# Author: Hershal Pandya — https://www.linkedin.com/in/hershalpandya/
 """Shared fixtures. The two fixture projects are built once per session and copied into each test's tmp_path,
 so every test still owns a private, writable project."""
 

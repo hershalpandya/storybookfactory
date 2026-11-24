@@ -1,3 +1,4 @@
+# Author: Hershal Pandya — https://www.linkedin.com/in/hershalpandya/
 """Legacy benchmark runs: freeze cases, start attempts, capture results through journal.py and score them."""
 
 import json

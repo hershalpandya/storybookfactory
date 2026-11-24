@@ -1,3 +1,4 @@
+# Author: Hershal Pandya — https://www.linkedin.com/in/hershalpandya/
 """Former home of the Gemini adapter and dispatch; kept so existing imports keep working.
 
 The adapter is providers/gemini_http.py and the dispatch policy is generation.py.

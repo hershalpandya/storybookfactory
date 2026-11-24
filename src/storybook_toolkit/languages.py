@@ -1,3 +1,4 @@
+# Author: Hershal Pandya — https://www.linkedin.com/in/hershalpandya/
 """Built-in language module descriptions; no automatic pronunciation engine."""
 
 MODULES = {

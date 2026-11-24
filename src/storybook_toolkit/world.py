@@ -1,3 +1,4 @@
+# Author: Hershal Pandya — https://www.linkedin.com/in/hershalpandya/
 """Validate a declared set occupancy timeline before staging illustrations.
 
 This checks editorial declarations, not generated pixels. A visual review is

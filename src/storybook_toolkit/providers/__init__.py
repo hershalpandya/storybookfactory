@@ -1,3 +1,4 @@
+# Author: Hershal Pandya — https://www.linkedin.com/in/hershalpandya/
 """Image provider adapters.
 
 An adapter implements ImageProvider; generation.dispatch talks to one adapter and never falls back to another.

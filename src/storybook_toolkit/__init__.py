@@ -1,3 +1,4 @@
+# Author: Hershal Pandya — https://www.linkedin.com/in/hershalpandya/
 """Tools for creating reviewed illustrated storybooks."""
 
 from importlib import metadata

@@ -1,3 +1,4 @@
+# Author: Hershal Pandya — https://www.linkedin.com/in/hershalpandya/
 """Attempt journal transitions: pending -> captured or failed, once; duplicate pixels; pauses."""
 
 import pytest

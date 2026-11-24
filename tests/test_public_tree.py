@@ -1,3 +1,4 @@
+# Author: Hershal Pandya — https://www.linkedin.com/in/hershalpandya/
 """The public toolkit stays free of private story material.
 
 The private directories are ignored by Git. The check rejects tracked files in those directories and

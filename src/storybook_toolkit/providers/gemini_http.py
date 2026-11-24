@@ -1,3 +1,4 @@
+# Author: Hershal Pandya — https://www.linkedin.com/in/hershalpandya/
 """HTTP adapter for the Google Gemini image API: request wire format, error mapping and response decoding.
 
 It knows nothing about budgets, journals or reviews; generation.py owns those. Every adapter offers the

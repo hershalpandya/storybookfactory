@@ -1,3 +1,4 @@
+# Author: Hershal Pandya — https://www.linkedin.com/in/hershalpandya/
 """Recurring-setting declarations and the preflight for fresh scene generation."""
 
 from shlex import join

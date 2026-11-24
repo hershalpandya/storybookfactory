@@ -1,3 +1,4 @@
+# Author: Hershal Pandya — https://www.linkedin.com/in/hershalpandya/
 """Local scene handoffs; image creation is deliberately external."""
 import hashlib
 import os

@@ -1,3 +1,4 @@
+# Author: Hershal Pandya — https://www.linkedin.com/in/hershalpandya/
 """Choose and set up the image provider for a project: a Gemini API key, or a subscription tool.
 
 `storybook provider status PROJECT` explains what is configured and what to do next.

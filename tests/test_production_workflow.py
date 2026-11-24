@@ -1,3 +1,4 @@
+# Author: Hershal Pandya — https://www.linkedin.com/in/hershalpandya/
 """Regressions for lost attempts, mutable sets, false visual passes, and late layout errors."""
 
 from copy import deepcopy

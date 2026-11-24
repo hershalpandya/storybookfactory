@@ -1,3 +1,4 @@
+# Author: Hershal Pandya — https://www.linkedin.com/in/hershalpandya/
 """The edition manifest store: content-addressed blobs, pictures, pages and immutable revisions."""
 
 from pathlib import Path

@@ -1,3 +1,4 @@
+# Author: Hershal Pandya — https://www.linkedin.com/in/hershalpandya/
 """Edition revision operations that the end-to-end delivery test does not reach."""
 
 from copy import deepcopy

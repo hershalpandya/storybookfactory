@@ -1,3 +1,4 @@
+# Author: Hershal Pandya — https://www.linkedin.com/in/hershalpandya/
 """Set plans: one 3D plan per recurring set, rendered locally from each page's camera.
 
 A set plan is a JSON file kept with the private project. It holds the set's objects in metres (x east, z north,

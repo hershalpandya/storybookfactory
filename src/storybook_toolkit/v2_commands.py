@@ -1,3 +1,4 @@
+# Author: Hershal Pandya — https://www.linkedin.com/in/hershalpandya/
 """CLI for plan v2: ab (drift gate), textspec, cast-sheet, sheets, scorecard, next, set-layout and set-score."""
 
 from copy import deepcopy

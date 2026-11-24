@@ -1,3 +1,4 @@
+# Author: Hershal Pandya — https://www.linkedin.com/in/hershalpandya/
 """Versioned storybook editions: immutable revisions, artwork slots, reviews, revisions and builds.
 
 manifest   content store, pages and revision loading

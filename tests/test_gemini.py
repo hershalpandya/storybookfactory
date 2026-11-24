@@ -1,3 +1,4 @@
+# Author: Hershal Pandya — https://www.linkedin.com/in/hershalpandya/
 """The Gemini adapter (wire format, errors, cost) and the dispatch policy gates of an edition."""
 
 from base64 import b64encode

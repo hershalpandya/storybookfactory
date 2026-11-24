@@ -1,3 +1,4 @@
+# Author: Hershal Pandya — https://www.linkedin.com/in/hershalpandya/
 """Former home of legacy/scenes.py; this name is the same module object, so imports and test patches still apply."""
 
 import sys

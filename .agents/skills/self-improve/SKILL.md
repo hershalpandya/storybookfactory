@@ -2,6 +2,8 @@
 name: self-improve
 description: Use at the end of an image round or session, or when the same defect shows up again, to turn entries in .learnings/ERRORS.md into tested rules and promote them into skills, docs or CLI checks. Repo-maintenance skill, not exported.
 ---
+
+<!-- Author: Hershal Pandya — https://www.linkedin.com/in/hershalpandya/ -->
 # Self-improve
 
 Goal: fewer image calls per accepted page. For scene runs the scorecard is `storybook benchmark-report` (first-pass acceptance and retries). Use `edition gemini-report` for Gemini rounds and `edition art-status` and the round journal for externally operated providers. A rule that does not improve these numbers is not worth keeping.
