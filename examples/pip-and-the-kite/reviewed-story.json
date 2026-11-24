@@ -1,0 +1,12 @@
+{
+ "format_version": 1,
+ "human_reviewed": true,
+ "reviewer": "Example reviewer (replace with your name once you have checked the passages against the transcript)",
+ "notes": "Line 1 is the storyteller's aside and is left out.",
+ "passages": [
+  {"text": "Pip the sheep finds a red kite in the meadow. The wind pulls it up high, and Pip runs after it.",
+   "sources": [{"transcript_id": "T0001", "location": "line 2"}], "uncertainty": ""},
+  {"text": "Then Nell, her friend, holds the string with Pip. Together they keep the kite in the sky until sunset.",
+   "sources": [{"transcript_id": "T0001", "location": "line 3"}], "uncertainty": ""}
+ ]
+}

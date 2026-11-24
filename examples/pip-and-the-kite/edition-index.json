@@ -1,0 +1,26 @@
+{
+ "events": [
+  {"id": "find-kite", "actor": "pip", "speaker": "Narrator", "action": "Pip finds a red kite and runs after it", "source_passages": [0]},
+  {"id": "fly-together", "actor": "nell", "speaker": "Narrator", "action": "Nell and Pip hold the string until sunset", "source_passages": [1]}
+ ],
+ "pages": [
+  {"id": "p01", "text": "Pip, le mouton, trouve un cerf-volant rouge dans le pré. Le vent l'emporte très haut, et Pip court derrière.",
+   "annotations": [], "events": ["find-kite"],
+   "art": {
+    "illustration": {"disposition": "new", "reason": "New story", "brief": {"description": "Pip, a small white sheep, runs across a green meadow after a red kite rising in the wind."}},
+    "colouring": {"disposition": "new", "reason": "New story", "brief": {"description": "A simple outline of the kite with its tail."}}
+   }},
+  {"id": "p02", "text": "Nell, son amie, tient la ficelle avec Pip. Ensemble, ils gardent le cerf-volant dans le ciel jusqu'au coucher du soleil.",
+   "annotations": [], "events": ["fly-together"],
+   "art": {
+    "illustration": {"disposition": "new", "reason": "New story", "brief": {"description": "At sunset Pip and Nell, a brown sheep, hold the kite string together on a hill."}},
+    "colouring": {"disposition": "new", "reason": "New story", "brief": {"description": "A simple outline of Pip and Nell holding the string."}}
+   }}
+ ],
+ "covers": {
+  "front": {"id": "cover", "role": "front", "art": {"illustration": {"disposition": "new", "reason": "Front cover", "brief": {"description": "Pip and Nell under a red kite in a blue sky; clear sky at the top for the title."}}}},
+  "back": {"id": "back", "role": "back", "art": {"illustration": {"disposition": "unresolved", "reason": "Back cover chosen later", "brief": {"description": "Back cover"}}}}
+ },
+ "generation": {"model": "gemini-nano-banana-2.1", "max_submissions": 6,
+                "slots": ["cover/illustration", "p01/illustration", "p02/illustration"]}
+}
