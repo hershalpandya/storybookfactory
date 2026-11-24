@@ -1,5 +1,7 @@
 # Storybook Factory
 
+<img src="assets/storybook-factory-logo.png" alt="Storybook Factory logo with a paper bird rising from a speech bubble" width="600">
+
 Storybook Factory is a Python toolkit for turning English transcripts into illustrated French CE1 storybooks. It tracks source and adaptation reviews, recurring characters and sets, illustration attempts, and reading and print PDFs.
 
 ## Run the offline example
@@ -47,3 +49,5 @@ For a manual workflow, see [source preparation](docs/PROJECT-FORMAT.md), [French
 Use the [contributor guide](CONTRIBUTING.md) for the code map, test commands and skill workflow. Agents start with [AGENTS.md](AGENTS.md). See [SECURITY.md](SECURITY.md) for private vulnerability reporting.
 
 The toolkit uses the [MIT License](LICENSE). See the [third-party notices](THIRD-PARTY-NOTICES.md) for the bundled Marelle 2 font and vendored skills.
+
+Maintained by Hershal Pandya. [LinkedIn](https://www.linkedin.com/in/hershalpandya/)

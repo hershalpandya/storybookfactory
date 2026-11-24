@@ -11,6 +11,10 @@ requires-python = ">=3.11"
 dependencies = ["Pillow>=13.0.0", "reportlab>=4"]
 license = "MIT"
 license-files = ["LICENSE", "THIRD-PARTY-NOTICES.md", "src/storybook_toolkit/fonts/LICENSE"]
+authors = [{ name = "Hershal Pandya" }]
+
+[project.urls]
+LinkedIn = "https://www.linkedin.com/in/hershalpandya/"
 
 [project.scripts]
 storybook = "storybook_toolkit.cli:main"
